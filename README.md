@@ -1,27 +1,35 @@
-# Congerie Better UI for Torn
+# Congerie for Torn
 
-A visual-only Torn UI redesign for Torn PDA.
+A Vencord-inspired, visual-only client layer for Torn. Congerie changes presentation, navigation, density, and theming while leaving Torn's underlying functionality native.
 
-## Install in Torn PDA
+## Install
 
-Use the remote userscript URL:
+Userscript URL:
 
 `https://raw.githubusercontent.com/congeriesstudio-wq/better-ui/main/congerie-torn-ui.user.js`
 
-In Torn PDA, open **Settings → Advanced Browser Settings → Manage Scripts → +** and add the remote userscript URL.
+For Torn PDA: **Settings → Advanced Browser Settings → Manage Scripts → +**.
 
-The script includes `@updateURL` and `@downloadURL`, so future releases can be delivered through the remote script update mechanism.
+For desktop/mobile browsers, install the URL with a compatible userscript manager.
 
-## Current version
+## v10 architecture
 
-**1.0.0**
+- Congerie Core: lifecycle, routing, settings, persistence
+- Better Navigation: desktop sidebar + mobile drawer
+- Resource HUD: Energy, Nerve, Happy, Life when available
+- Page Enhancements: tables, forms, controls, overflow handling
+- Settings: sidebar, HUD, enhancements, compact mode, animations, accent
+- Responsive shell: desktop, tablet, narrow mobile, and PDA-sized layouts
+- Route-safe behavior: does not reparent Torn's main containers
 
-## Scope
+## Design rules
 
-- Modern dark/glass visual styling
-- Improved buttons, inputs, tables and scrollbars
-- Floating Congerie settings control
-- Compact mode
-- Accent switching
-- No gameplay automation
-- No external/non-API Torn requests
+Congerie is a UI layer, not a gameplay bot. It does not automate attacks, trades, travel, or other gameplay actions. Native Torn links, forms, buttons, and page behavior remain responsible for actions.
+
+## Development direction
+
+The project is intentionally structured around a Core + plugin model so future features can be added as independent UI modules instead of turning the userscript into one large page rewrite.
+
+## Version
+
+**10.0.0**
