@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0 — Full structural redesign
+
+- Replaced the fixed overlay architecture with a real responsive application layout.
+- Torn's active main content is moved into the Congerie content region instead of being covered by UI layers.
+- Replaced Torn's desktop header and sidebar with Congerie's own structural navigation.
+- Added a real desktop two-column layout with header, sidebar, content, and footer regions.
+- Added a dedicated mobile/tablet layout with a navigation drawer and bottom navigation.
+- Reworked page surfaces, tables, forms, controls, links, spacing, typography, and backgrounds as one design system.
+- Removed the previous full-screen fixed shell that could cover Torn PDA controls and messages.
+- Kept the redesign visual-only and avoided external network requests.
+- Preserved Torn page links and active page detection.
+
 ## 2.1.0 — Responsive interface foundation
 
 - Rebuilt the visual shell around Torn's real desktop structure.
