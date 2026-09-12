@@ -1,20 +1,25 @@
 # Changelog
 
+## 10.0.0 — Congerie Core
+
+### Changed
+- Reframed the project as a Vencord-style Torn UI layer.
+- Replaced the previous stacked mobile shell with one coherent navigation system.
+- Added a persistent desktop sidebar and mobile drawer.
+- Added a compact resource HUD.
+- Added route-aware page presentation without moving Torn's core containers.
+- Added persistent settings for navigation, resources, page enhancements, density, animations, and accent.
+- Added desktop, tablet, mobile, and PDA responsive behavior.
+
+### Safety / scope
+- UI and presentation only.
+- Torn links, forms, buttons, and gameplay behavior remain native.
+- No gameplay automation was added.
+
+## 9.0.0
+
+- Mobile-first Congerie shell and sidebar navigation foundation.
+
 ## 5.0.2
 
-### Fixed
-- Fixed mobile and Torn PDA page loading by removing the desktop shell/reparenting logic from narrow layouts.
-- Mobile and PDA no longer hide Torn's native header/sidebar or add a fixed bottom navigation layer.
-- Desktop keeps the Congerie redesigned shell.
-
-### Stability
-- Added an explicit mobile/PDA safety gate before any DOM manipulation.
-- Prevented the desktop MutationObserver and route polling from running on mobile/PDA.
-
-## 5.0.1
-
-### Fixed
-- Reduced selector collisions with Torn's native header and sidebar.
-- Made the main content container selection more conservative.
-- Scoped the redesigned content styles to the Congerie content area.
-- Added safer responsive behavior for desktop, tablet, phone, and Torn PDA.
+- Fixed mobile and Torn PDA page loading by removing desktop shell/reparenting logic from narrow layouts.
