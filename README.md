@@ -1,35 +1,67 @@
 # Congerie for Torn
 
-A Vencord-inspired, visual-only client layer for Torn. Congerie changes presentation, navigation, density, and theming while leaving Torn's underlying functionality native.
+Congerie is a visual client UI layer for Torn. It is designed around a modular, Vencord-inspired architecture: Torn remains responsible for game behavior while Congerie controls presentation, navigation, layout, density and themes.
 
-## Install
+## Install in Torn PDA / userscript manager
 
-Userscript URL:
+Use the remote userscript URL:
 
 `https://raw.githubusercontent.com/congeriesstudio-wq/better-ui/main/congerie-torn-ui.user.js`
 
-For Torn PDA: **Settings → Advanced Browser Settings → Manage Scripts → +**.
+The script includes `@updateURL` and `@downloadURL` so future releases can update through the userscript manager.
 
-For desktop/mobile browsers, install the URL with a compatible userscript manager.
+## Current release
 
-## v10 architecture
+**11.0.0 — Congerie Core rebuild**
 
-- Congerie Core: lifecycle, routing, settings, persistence
-- Better Navigation: desktop sidebar + mobile drawer
-- Resource HUD: Energy, Nerve, Happy, Life when available
-- Page Enhancements: tables, forms, controls, overflow handling
-- Settings: sidebar, HUD, enhancements, compact mode, animations, accent
-- Responsive shell: desktop, tablet, narrow mobile, and PDA-sized layouts
-- Route-safe behavior: does not reparent Torn's main containers
+## Design goals
 
-## Design rules
+- One coherent UI instead of layered Torn + overlay navigation
+- Sidebar-first desktop navigation and drawer-first mobile navigation
+- Compact status information for Energy, Nerve, Happy and Life
+- Dark, dense, readable panels inspired by Torn's information-heavy interface
+- Responsive layouts for desktop, tablet, phone and Torn PDA
+- Page-aware presentation for Home, City, Items, Market, Battle, Travel, Gym, Faction, Profile, Messages, Forums, Jobs, Education and Missions
+- Settings for navigation, status bar, page enhancements, compact mode, motion and accent
+- No gameplay automation
+- No simulated clicks or combat decisions
+- No external/non-API Torn requests
+- No reparenting of Torn's core page containers
 
-Congerie is a UI layer, not a gameplay bot. It does not automate attacks, trades, travel, or other gameplay actions. Native Torn links, forms, buttons, and page behavior remain responsible for actions.
+## Architecture direction
 
-## Development direction
+Congerie is being developed as a UI platform rather than a single CSS theme. The long-term structure is:
 
-The project is intentionally structured around a Core + plugin model so future features can be added as independent UI modules instead of turning the userscript into one large page rewrite.
+```text
+Congerie Core
+├── lifecycle / route detection
+├── navigation
+├── status HUD
+├── settings / persistence
+├── theme + density system
+└── page plugin registry
 
-## Version
+Page plugins
+├── Home
+├── City
+├── Items
+├── Market
+├── Battle
+├── Travel
+├── Gym
+├── Faction
+├── Profile
+├── Messages
+├── Forums
+├── Jobs
+├── Education
+└── Missions
+```
 
-**10.0.0**
+The current userscript is the distributable build. Page-specific adapters are intentionally being added incrementally so Torn's native functionality is preserved while each screen is redesigned around its real content.
+
+## Reference research
+
+The redesign uses Torn's current information hierarchy and community screenshots as references rather than inventing a generic dashboard. In particular, the research phase reviewed the City map, Item Market categories and filters, Travel Agency destination lists, player profile sections, Education progress cards, Gym training controls and combat layouts.
+
+See `docs/UI_REFERENCE.md` for the page-by-page design targets.
