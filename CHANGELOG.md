@@ -1,5 +1,27 @@
 # Changelog
 
+## 12.0.0 — PDA-first stability rebuild
+
+### Changed
+- Rebuilt the userscript around Torn PDA as the primary runtime target.
+- Removed the old native-header hiding behavior that could collide with PDA's page structure.
+- Kept Torn's core containers in place; Congerie never reparents them.
+- Added a defensive lifecycle that waits for `document.body`, tolerates Torn DOM updates, and reapplies presentation after route changes.
+- Added route-aware navigation state updates without recreating the whole UI on every navigation.
+- Kept the desktop sidebar and PDA/mobile drawer as the only Congerie navigation systems.
+- Kept the compact status strip separate from Torn's native controls.
+- Added safer page-class cleanup so previous-page styling does not leak after navigation.
+- Preserved Torn's native links, forms, buttons and page behavior as the source of truth.
+
+### Stability
+- No gameplay automation.
+- No simulated clicks.
+- No core-container reparenting.
+- No external network requests.
+- No dependency on Tampermonkey/GM APIs.
+- Uses only DOM/CSS/localStorage features available to Torn PDA userscripts.
+- Syntax checked with Node before publishing.
+
 ## 11.0.0 — Congerie Core rebuild
 
 ### Changed
@@ -11,11 +33,6 @@
 - Added persistent Congerie settings for navigation, status bar, page enhancements, compact mode, motion and accent.
 - Preserved Torn's core containers instead of moving them into a replacement shell.
 - Added a page-by-page UI reference board based on Torn documentation and community screenshots.
-
-### Stability
-- Keeps Torn's native links, forms and actions as the source of truth.
-- Avoids gameplay automation.
-- Keeps the mobile layout separate from the desktop sidebar layout.
 
 ## 10.0.0 — Congerie Core
 
