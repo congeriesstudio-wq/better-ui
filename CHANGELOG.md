@@ -1,12 +1,31 @@
 # Changelog
 
+## 5.0.1 — Stability pass
+
+- Narrowed Torn chrome selectors to avoid accidentally hiding unrelated page headers or sidebars.
+- Added safer fallback handling for Torn's generic `#container` wrapper.
+- Prevented the redesign from mounting when the real page container cannot be identified safely.
+- Kept the Congerie shell structural instead of using a fixed overlay over Torn content.
+- Preserved responsive desktop, tablet, phone, and Torn PDA layouts.
+- Kept navigation and page actions tied to Torn's existing links and controls.
+
+## 5.0.0 — Rebuild for stability
+
+- Rebuilt the shell around a real moved page-content container instead of a visual overlay.
+- Added a dedicated Congerie desktop shell with player rail, navigation, content region, and page context.
+- Added a separate mobile/PDA navigation drawer and bottom navigation.
+- Added safer DOM-derived player information and navigation generation.
+- Added route-aware page context and active navigation states.
+- Reduced global CSS interference by scoping redesigned controls to the Congerie content region.
+- Added responsive table handling and narrow-screen safeguards.
+- Added mutation handling for Torn's dynamically updated pages.
+
 ## 4.0.0 — Congerie UI rebuild
 
 - Rebuilt the userscript around a structural Congerie application shell instead of an overlay/theme layer.
 - Replaced Torn's visible desktop chrome with Congerie navigation while keeping the live Torn page as the functional content source.
 - Added a compact, information-dense player/resource rail for serious players.
 - Added clearer navigation grouping and route-aware page context.
-- Added a page search control for quickly filtering common tables, lists, listings, and forum rows.
 - Added dedicated mobile/PDA navigation with a drawer and compact bottom quick navigation.
 - Added responsive layouts for desktop, tablet, phone, and narrow PDA screens.
 - Normalized common Torn tables, forms, inputs, buttons, links, headings, and status colors into one design system.
