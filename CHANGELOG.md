@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.0.0 — Congerie UI rebuild
+
+- Rebuilt the userscript around a structural Congerie application shell instead of an overlay/theme layer.
+- Replaced Torn's visible desktop chrome with Congerie navigation while keeping the live Torn page as the functional content source.
+- Added a compact, information-dense player/resource rail for serious players.
+- Added clearer navigation grouping and route-aware page context.
+- Added a page search control for quickly filtering common tables, lists, listings, and forum rows.
+- Added dedicated mobile/PDA navigation with a drawer and compact bottom quick navigation.
+- Added responsive layouts for desktop, tablet, phone, and narrow PDA screens.
+- Normalized common Torn tables, forms, inputs, buttons, links, headings, and status colors into one design system.
+- Added safer DOM mounting and route-change handling for Torn pages that update dynamically.
+- Avoided external requests and gameplay automation; the redesign remains presentation-focused.
+- Added reduced-motion support and narrow-screen safeguards.
+
 ## 3.0.0 — Full structural redesign
 
 - Replaced the fixed overlay architecture with a real responsive application layout.
