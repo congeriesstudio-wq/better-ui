@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Congerie Better UI for Torn
 // @namespace    https://github.com/congeriesstudio-wq/better-ui
-// @version      1.0.0
-// @description  Modern dark/glass visual redesign for Torn PDA. Visual-only; no gameplay automation or external requests.
+// @version      1.1.0
+// @description  Adaptive dark visual redesign for Torn PDA.
 // @match        https://www.torn.com/*
 // @run-at       document-end
 // @grant        none
@@ -14,202 +14,428 @@
     'use strict';
 
     const STYLE_ID = 'congerie-better-ui-style';
-    const ROOT_ID = 'congerie-ui-controls';
+    const ROOT_ID = 'congerie-ui';
+    const STORAGE = 'congerie-better-ui';
 
     if (document.getElementById(STYLE_ID)) return;
 
+    const state = {
+        compact: false,
+        accent: 'blue',
+        navOpen: false,
+    };
+
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+        state.compact = saved.compact === true;
+        state.accent = ['blue', 'violet', 'green'].includes(saved.accent) ? saved.accent : 'blue';
+    } catch (_) {}
+
     const css = `
         :root {
-            --cg-bg: #0a0d12;
-            --cg-surface: rgba(18, 23, 32, .88);
-            --cg-surface-2: rgba(25, 31, 42, .92);
-            --cg-border: rgba(255,255,255,.09);
-            --cg-border-strong: rgba(255,255,255,.15);
-            --cg-text: #eef2f7;
-            --cg-muted: #9ba7b7;
-            --cg-accent: #60a5fa;
-            --cg-accent-2: #3b82f6;
-            --cg-shadow: 0 16px 45px rgba(0,0,0,.32);
-            --cg-radius: 14px;
+            --cg-bg: #0b0e13;
+            --cg-bg-soft: #0f131a;
+            --cg-panel: #131820;
+            --cg-panel-2: #171d26;
+            --cg-panel-3: #1b222d;
+            --cg-border: rgba(255,255,255,.075);
+            --cg-border-strong: rgba(255,255,255,.12);
+            --cg-text: #f1f5f9;
+            --cg-text-2: #c4ccd7;
+            --cg-muted: #8793a3;
+            --cg-accent: #5da7ff;
+            --cg-accent-soft: rgba(93,167,255,.13);
+            --cg-accent-border: rgba(93,167,255,.32);
+            --cg-success: #55c98a;
+            --cg-warning: #e6b65b;
+            --cg-danger: #ef7373;
+            --cg-radius: 11px;
+            --cg-radius-sm: 8px;
+            --cg-shadow: 0 12px 35px rgba(0,0,0,.20);
+            --cg-content-max: 1220px;
         }
+
+        html.cg-accent-violet { --cg-accent:#a78bfa; --cg-accent-soft:rgba(167,139,250,.13); --cg-accent-border:rgba(167,139,250,.32); }
+        html.cg-accent-green { --cg-accent:#55c98a; --cg-accent-soft:rgba(85,201,138,.13); --cg-accent-border:rgba(85,201,138,.32); }
 
         html {
             background: var(--cg-bg) !important;
+            color-scheme: dark;
         }
 
         body {
-            background:
-                radial-gradient(circle at 15% -10%, rgba(59,130,246,.12), transparent 32%),
-                radial-gradient(circle at 90% 0%, rgba(96,165,250,.07), transparent 28%),
-                var(--cg-bg) !important;
+            background: var(--cg-bg) !important;
             color: var(--cg-text) !important;
         }
 
-        /* Common Torn surfaces */
-        [class*="content"], [class*="panel"], [class*="box"], [class*="card"],
-        [class*="profile"], [class*="page-title"], [class*="section"] {
-            border-color: var(--cg-border) !important;
+        /* Keep Torn's own layout intact; this layer improves its surfaces instead of replacing functionality. */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background:
+                radial-gradient(900px 500px at 15% -10%, rgba(93,167,255,.055), transparent 65%),
+                radial-gradient(700px 450px at 100% 0%, rgba(255,255,255,.025), transparent 65%);
         }
 
-        /* Cards/panels without relying on Torn's generated class suffixes */
-        .content-wrapper, .content-wrapper > *, main, aside {
-            --tw-ring-color: transparent;
+        /* Typography */
+        body, button, input, textarea, select {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
         }
 
-        button, input, textarea, select {
-            font: inherit !important;
+        /* Common surfaces. Deliberately avoids generated CSS-module class names. */
+        [class*="content"] > *,
+        [class*="panel"] > *,
+        [class*="box"] > *,
+        [class*="card"] > * {
+            box-sizing: border-box;
         }
 
-        button, [role="button"], input[type="button"], input[type="submit"] {
-            border-radius: 10px !important;
-            transition: transform .15s ease, filter .15s ease, box-shadow .15s ease !important;
+        /* Buttons */
+        button,
+        input[type="button"],
+        input[type="submit"],
+        input[type="reset"],
+        [role="button"] {
+            border-radius: var(--cg-radius-sm) !important;
+            transition: background .14s ease, border-color .14s ease, color .14s ease, transform .12s ease, filter .14s ease !important;
         }
 
-        button:hover, [role="button"]:hover, input[type="button"]:hover, input[type="submit"]:hover {
-            filter: brightness(1.08) !important;
+        button:hover,
+        input[type="button"]:hover,
+        input[type="submit"]:hover,
+        [role="button"]:hover {
+            filter: brightness(1.07);
         }
 
-        button:active, [role="button"]:active {
-            transform: translateY(1px) !important;
+        button:active,
+        input[type="button"]:active,
+        input[type="submit"]:active,
+        [role="button"]:active {
+            transform: translateY(1px);
         }
 
-        input, textarea, select {
-            background: rgba(9, 13, 19, .78) !important;
+        /* Forms */
+        input:not([type="checkbox"]):not([type="radio"]),
+        textarea,
+        select {
+            background: #0d1117 !important;
             color: var(--cg-text) !important;
             border: 1px solid var(--cg-border-strong) !important;
-            border-radius: 10px !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.025) !important;
+            border-radius: var(--cg-radius-sm) !important;
+            box-shadow: none !important;
         }
 
-        input:focus, textarea:focus, select:focus {
+        input:not([type="checkbox"]):not([type="radio"]):focus,
+        textarea:focus,
+        select:focus {
             outline: none !important;
-            border-color: rgba(96,165,250,.7) !important;
-            box-shadow: 0 0 0 3px rgba(96,165,250,.12) !important;
+            border-color: var(--cg-accent-border) !important;
+            box-shadow: 0 0 0 3px var(--cg-accent-soft) !important;
         }
 
-        a {
-            transition: color .15s ease, opacity .15s ease !important;
-        }
-
+        /* Tables */
         table {
             border-collapse: separate !important;
             border-spacing: 0 !important;
-            overflow: hidden !important;
-            border-radius: 12px !important;
             border: 1px solid var(--cg-border) !important;
-            background: rgba(14,18,25,.72) !important;
+            border-radius: var(--cg-radius) !important;
+            overflow: hidden !important;
+            background: var(--cg-panel) !important;
         }
 
-        th {
-            background: rgba(255,255,255,.045) !important;
-            color: #cbd5e1 !important;
+        table th {
+            background: #181e27 !important;
+            color: var(--cg-text-2) !important;
+            font-weight: 650 !important;
         }
 
-        td, th {
+        table td,
+        table th {
             border-color: var(--cg-border) !important;
         }
 
-        /* Scrollbars */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(148,163,184,.35) transparent;
+        table tbody tr:hover {
+            background: rgba(255,255,255,.018) !important;
         }
 
+        /* Links */
+        a {
+            transition: color .14s ease, opacity .14s ease !important;
+        }
+
+        /* Scrollbars */
+        * { scrollbar-width: thin; scrollbar-color: #343d4a transparent; }
         *::-webkit-scrollbar { width: 8px; height: 8px; }
         *::-webkit-scrollbar-track { background: transparent; }
-        *::-webkit-scrollbar-thumb {
-            background: rgba(148,163,184,.30);
-            border-radius: 99px;
-        }
-        *::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,.48); }
+        *::-webkit-scrollbar-thumb { background: #343d4a; border-radius: 99px; }
+        *::-webkit-scrollbar-thumb:hover { background: #475466; }
 
-        /* Congerie floating control */
+        /* Congerie shell */
         #${ROOT_ID} {
             position: fixed;
-            right: 14px;
-            bottom: 14px;
-            z-index: 2147483647;
-            font-family: Arial, Helvetica, sans-serif;
+            inset: 0;
+            z-index: 2147483000;
+            pointer-events: none;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
-        #${ROOT_ID} .cg-toggle {
-            width: 44px;
-            height: 44px;
-            border: 1px solid rgba(96,165,250,.35);
-            border-radius: 50%;
-            background: rgba(15, 20, 29, .92);
+        #${ROOT_ID} * { box-sizing: border-box; }
+
+        #${ROOT_ID} .cg-sidebar {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            bottom: 12px;
+            width: 196px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(15,19,25,.96);
+            border: 1px solid var(--cg-border);
+            border-radius: 14px;
+            box-shadow: var(--cg-shadow);
+            pointer-events: auto;
+            transform: translateX(0);
+            transition: transform .2s ease;
+            overflow: hidden;
+        }
+
+        #${ROOT_ID} .cg-brand {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 8px;
+            margin-bottom: 8px;
+        }
+
+        #${ROOT_ID} .cg-mark {
+            width: 30px;
+            height: 30px;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--cg-accent-border);
+            border-radius: 9px;
+            background: var(--cg-accent-soft);
             color: var(--cg-accent);
-            box-shadow: var(--cg-shadow);
-            cursor: pointer;
+            font-size: 11px;
             font-weight: 800;
+            letter-spacing: -.04em;
+        }
+
+        #${ROOT_ID} .cg-brand-name {
+            color: #f8fafc;
             font-size: 13px;
-            backdrop-filter: blur(12px);
+            font-weight: 750;
+            letter-spacing: -.01em;
         }
 
-        #${ROOT_ID} .cg-toggle:hover {
-            box-shadow: 0 0 0 4px rgba(96,165,250,.10), var(--cg-shadow);
+        #${ROOT_ID} .cg-brand-sub {
+            color: #657184;
+            font-size: 9px;
+            margin-top: 2px;
         }
 
-        #${ROOT_ID} .cg-menu {
-            display: none;
-            position: absolute;
-            right: 0;
-            bottom: 54px;
-            width: 220px;
-            padding: 14px;
-            border: 1px solid var(--cg-border-strong);
-            border-radius: var(--cg-radius);
-            background: rgba(12, 17, 25, .94);
-            box-shadow: var(--cg-shadow);
-            backdrop-filter: blur(18px);
-        }
-
-        #${ROOT_ID}.open .cg-menu { display: block; }
-
-        #${ROOT_ID} .cg-title {
-            font-size: 12px;
-            font-weight: 800;
-            letter-spacing: .08em;
+        #${ROOT_ID} .cg-nav-label {
+            padding: 8px 8px 5px;
+            color: #566274;
+            font-size: 9px;
+            font-weight: 750;
+            letter-spacing: .10em;
             text-transform: uppercase;
-            color: #dbeafe;
-            margin-bottom: 10px;
         }
 
-        #${ROOT_ID} .cg-row {
+        #${ROOT_ID} .cg-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            overflow: auto;
+            padding-right: 2px;
+        }
+
+        #${ROOT_ID} .cg-nav a {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 34px;
+            padding: 0 9px;
+            color: #9ca8b8;
+            text-decoration: none;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        #${ROOT_ID} .cg-nav a:hover,
+        #${ROOT_ID} .cg-nav a.cg-active {
+            color: #edf4fc;
+            background: var(--cg-accent-soft);
+            border-color: rgba(255,255,255,.035);
+        }
+
+        #${ROOT_ID} .cg-nav a.cg-active::after {
+            content: '';
+            width: 3px;
+            height: 15px;
+            margin-left: auto;
+            border-radius: 99px;
+            background: var(--cg-accent);
+        }
+
+        #${ROOT_ID} .cg-icon {
+            width: 17px;
+            color: #6f7c8d;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        #${ROOT_ID} .cg-nav a:hover .cg-icon,
+        #${ROOT_ID} .cg-nav a.cg-active .cg-icon { color: var(--cg-accent); }
+
+        #${ROOT_ID} .cg-spacer { flex: 1; }
+
+        #${ROOT_ID} .cg-footer {
+            padding-top: 10px;
+            border-top: 1px solid var(--cg-border);
+        }
+
+        #${ROOT_ID} .cg-settings {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 9px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            color: #8b98a9;
+            cursor: pointer;
+            text-align: left;
+            font-size: 11px;
+        }
+
+        #${ROOT_ID} .cg-settings:hover {
+            color: #eef2f7;
+            background: rgba(255,255,255,.035);
+        }
+
+        #${ROOT_ID} .cg-settings-panel {
+            display: none;
+            position: fixed;
+            left: 220px;
+            bottom: 12px;
+            width: 270px;
+            padding: 15px;
+            background: rgba(15,19,25,.98);
+            border: 1px solid var(--cg-border-strong);
+            border-radius: 13px;
+            box-shadow: var(--cg-shadow);
+        }
+
+        #${ROOT_ID}.cg-settings-open .cg-settings-panel { display: block; }
+
+        #${ROOT_ID} .cg-panel-title {
+            color: #f1f5f9;
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        #${ROOT_ID} .cg-panel-sub {
+            margin-top: 3px;
+            color: #687588;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        #${ROOT_ID} .cg-setting {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin: 9px 0;
-            color: var(--cg-muted);
-            font-size: 12px;
+            margin-top: 14px;
+            color: #aab5c3;
+            font-size: 11px;
         }
 
-        #${ROOT_ID} .cg-row button {
+        #${ROOT_ID} .cg-setting button {
+            min-width: 56px;
+            padding: 6px 8px;
             border: 1px solid var(--cg-border-strong);
-            background: rgba(255,255,255,.055);
-            color: #e5e7eb;
-            padding: 6px 9px;
+            background: #181e27;
+            color: #dce3ec;
             cursor: pointer;
         }
 
-        #${ROOT_ID} .cg-row button.active {
-            background: rgba(96,165,250,.16);
-            border-color: rgba(96,165,250,.45);
-            color: #bfdbfe;
+        #${ROOT_ID} .cg-setting button.cg-on {
+            border-color: var(--cg-accent-border);
+            background: var(--cg-accent-soft);
+            color: var(--cg-accent);
         }
 
-        #${ROOT_ID} .cg-note {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--cg-border);
-            color: #64748b;
-            font-size: 10px;
-            line-height: 1.45;
+        #${ROOT_ID} .cg-mobile-button {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 38px;
+            height: 38px;
+            border: 1px solid var(--cg-border-strong);
+            border-radius: 10px;
+            background: rgba(15,19,25,.95);
+            color: var(--cg-accent);
+            cursor: pointer;
+            pointer-events: auto;
         }
 
-        html.cg-compact * { line-height: 1.18 !important; }
-        html.cg-compact button, html.cg-compact input, html.cg-compact select { min-height: 30px !important; }
+        /* Give Torn's main content breathing room on wider screens without changing its DOM. */
+        @media (min-width: 900px) {
+            body.cg-shell-active #mainContainer,
+            body.cg-shell-active #mainContainerWrap,
+            body.cg-shell-active .content-wrapper {
+                margin-left: 216px !important;
+            }
+        }
+
+        @media (max-width: 899px) {
+            #${ROOT_ID} .cg-sidebar {
+                top: 8px;
+                left: 8px;
+                bottom: 8px;
+                width: 210px;
+                transform: translateX(-230px);
+            }
+            #${ROOT_ID}.cg-nav-open .cg-sidebar { transform: translateX(0); }
+            #${ROOT_ID} .cg-mobile-button { display: grid; place-items: center; }
+            #${ROOT_ID} .cg-settings-panel { left: 8px; bottom: 58px; width: min(270px, calc(100vw - 16px)); }
+            body.cg-shell-active #mainContainer,
+            body.cg-shell-active #mainContainerWrap,
+            body.cg-shell-active .content-wrapper {
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 520px) {
+            #${ROOT_ID} .cg-sidebar { width: min(260px, calc(100vw - 16px)); }
+        }
+
+        html.cg-compact #${ROOT_ID} .cg-sidebar { width: 178px; }
+        html.cg-compact #${ROOT_ID} .cg-nav a { min-height: 30px; font-size: 10px; }
+        html.cg-compact #${ROOT_ID} .cg-brand { height: 42px; }
+
+        /* Page-aware polish. These classes let later page modules target pages safely. */
+        body.cg-page-home .content-wrapper,
+        body.cg-page-profile .content-wrapper,
+        body.cg-page-city .content-wrapper,
+        body.cg-page-items .content-wrapper,
+        body.cg-page-faction .content-wrapper,
+        body.cg-page-market .content-wrapper {
+            color: var(--cg-text);
+        }
     `;
 
     const style = document.createElement('style');
@@ -217,68 +443,139 @@
     style.textContent = css;
     document.head.appendChild(style);
 
-    const controls = document.createElement('div');
-    controls.id = ROOT_ID;
-    controls.innerHTML = `
-        <div class="cg-menu">
-            <div class="cg-title">Congerie UI</div>
-            <div class="cg-row">
-                <span>Compact mode</span>
-                <button type="button" id="cg-compact">Off</button>
-            </div>
-            <div class="cg-row">
-                <span>Accent</span>
-                <button type="button" id="cg-accent">Blue</button>
-            </div>
-            <div class="cg-note">Visual changes only. No gameplay automation or external requests.</div>
-        </div>
-        <button type="button" class="cg-toggle" aria-label="Open Congerie UI settings">CG</button>
-    `;
+    function pageInfo() {
+        const path = location.pathname.toLowerCase();
+        const map = [
+            ['/profiles.php', ['profile', 'Profile', '♙']],
+            ['/city.php', ['city', 'City', '⌂']],
+            ['/item.php', ['items', 'Items', '▣']],
+            ['/factions.php', ['faction', 'Faction', '◆']],
+            ['/hospitalview.php', ['hospital', 'Hospital', '＋']],
+            ['/jailview.php', ['jail', 'Jail', '▥']],
+            ['/joblist.php', ['job', 'Job', '▤']],
+            ['/market/', ['market', 'Market', '$']],
+            ['/loader.php', ['battle', 'Battle', '⚔']],
+            ['/forums.php', ['forums', 'Forums', '☷']],
+            ['/properties.php', ['property', 'Property', '⌂']],
+            ['/education.php', ['education', 'Education', '▤']],
+            ['/messages.php', ['messages', 'Messages', '✉']],
+        ];
+        const found = map.find(([prefix]) => path.startsWith(prefix));
+        return found ? { key: found[0], label: found[1], icon: found[2] } : { key: 'home', label: 'Home', icon: '◆' };
+    }
 
-    const mount = () => {
+    function save() {
+        try { localStorage.setItem(STORAGE, JSON.stringify({ compact: state.compact, accent: state.accent })); } catch (_) {}
+    }
+
+    function navItem(href, label, icon, key) {
+        const active = pageInfo().key === key ? ' cg-active' : '';
+        return `<a class="${active}" href="${href}" data-cg-key="${key}"><span class="cg-icon">${icon}</span><span>${label}</span></a>`;
+    }
+
+    function buildShell() {
         if (!document.body || document.getElementById(ROOT_ID)) return;
-        document.body.appendChild(controls);
 
-        const toggle = controls.querySelector('.cg-toggle');
-        toggle.addEventListener('click', () => controls.classList.toggle('open'));
+        const root = document.createElement('div');
+        root.id = ROOT_ID;
+        root.innerHTML = `
+            <button class="cg-mobile-button" type="button" aria-label="Open navigation">☰</button>
+            <aside class="cg-sidebar" aria-label="Congerie navigation">
+                <div class="cg-brand">
+                    <div class="cg-mark">CG</div>
+                    <div>
+                        <div class="cg-brand-name">Congerie</div>
+                        <div class="cg-brand-sub">Better UI</div>
+                    </div>
+                </div>
 
-        const compactButton = controls.querySelector('#cg-compact');
-        compactButton.addEventListener('click', () => {
-            const enabled = document.documentElement.classList.toggle('cg-compact');
-            compactButton.textContent = enabled ? 'On' : 'Off';
-            compactButton.classList.toggle('active', enabled);
-            try { localStorage.setItem('cg-compact', enabled ? '1' : '0'); } catch (_) {}
+                <div class="cg-nav-label">Navigate</div>
+                <nav class="cg-nav">
+                    ${navItem('/index.php', 'Home', '◆', 'home')}
+                    ${navItem('/profiles.php', 'Profile', '♙', 'profile')}
+                    ${navItem('/city.php', 'City', '⌂', 'city')}
+                    ${navItem('/item.php', 'Items', '▣', 'items')}
+                    ${navItem('/factions.php', 'Faction', '◆', 'faction')}
+                    ${navItem('/joblist.php', 'Job', '▤', 'job')}
+                    ${navItem('/hospitalview.php', 'Hospital', '＋', 'hospital')}
+                    ${navItem('/jailview.php', 'Jail', '▥', 'jail')}
+                    ${navItem('/market/', 'Market', '$', 'market')}
+                    ${navItem('/education.php', 'Education', '▤', 'education')}
+                    ${navItem('/messages.php', 'Messages', '✉', 'messages')}
+                    ${navItem('/forums.php', 'Forums', '☷', 'forums')}
+                </nav>
+
+                <div class="cg-spacer"></div>
+                <div class="cg-footer">
+                    <button class="cg-settings" type="button"><span class="cg-icon">⚙</span><span>Interface settings</span></button>
+                </div>
+            </aside>
+
+            <section class="cg-settings-panel" aria-label="Congerie settings">
+                <div class="cg-panel-title">Interface</div>
+                <div class="cg-panel-sub">Personalize the visual layer without changing Torn's functionality.</div>
+                <div class="cg-setting"><span>Compact mode</span><button type="button" data-cg-action="compact"></button></div>
+                <div class="cg-setting"><span>Accent</span><button type="button" data-cg-action="accent"></button></div>
+            </section>
+        `;
+
+        document.body.appendChild(root);
+        document.body.classList.add('cg-shell-active', `cg-page-${pageInfo().key}`);
+
+        root.querySelector('.cg-mobile-button').addEventListener('click', () => {
+            state.navOpen = !state.navOpen;
+            root.classList.toggle('cg-nav-open', state.navOpen);
         });
 
-        const accentButton = controls.querySelector('#cg-accent');
-        accentButton.addEventListener('click', () => {
-            const root = document.documentElement;
-            const current = root.style.getPropertyValue('--cg-accent').trim();
-            const next = current === '#a78bfa' ? '#34d399' : current === '#34d399' ? '#60a5fa' : '#a78bfa';
-            const name = next === '#a78bfa' ? 'Purple' : next === '#34d399' ? 'Green' : 'Blue';
-            root.style.setProperty('--cg-accent', next);
-            root.style.setProperty('--cg-accent-2', next);
-            accentButton.textContent = name;
+        root.querySelector('.cg-settings').addEventListener('click', () => {
+            root.classList.toggle('cg-settings-open');
         });
 
-        try {
-            if (localStorage.getItem('cg-compact') === '1') {
-                document.documentElement.classList.add('cg-compact');
-                compactButton.textContent = 'On';
-                compactButton.classList.add('active');
-            }
-        } catch (_) {}
-    };
+        root.querySelector('[data-cg-action="compact"]').addEventListener('click', () => {
+            state.compact = !state.compact;
+            applyState();
+        });
 
-    if (document.body) mount();
-    else window.addEventListener('DOMContentLoaded', mount, { once: true });
+        root.querySelector('[data-cg-action="accent"]').addEventListener('click', () => {
+            state.accent = state.accent === 'blue' ? 'violet' : state.accent === 'violet' ? 'green' : 'blue';
+            applyState();
+        });
 
-    // Torn is a dynamic app, so keep only our mount point alive if the page rerenders.
-    const observer = new MutationObserver(() => {
-        if (!document.getElementById(ROOT_ID) && document.body) {
-            document.body.appendChild(controls);
+        applyState();
+    }
+
+    function applyState() {
+        const html = document.documentElement;
+        html.classList.toggle('cg-compact', state.compact);
+        html.classList.toggle('cg-accent-violet', state.accent === 'violet');
+        html.classList.toggle('cg-accent-green', state.accent === 'green');
+
+        const root = document.getElementById(ROOT_ID);
+        if (!root) return;
+
+        const compact = root.querySelector('[data-cg-action="compact"]');
+        const accent = root.querySelector('[data-cg-action="accent"]');
+        if (compact) {
+            compact.textContent = state.compact ? 'On' : 'Off';
+            compact.classList.toggle('cg-on', state.compact);
         }
-    });
+        if (accent) {
+            accent.textContent = state.accent[0].toUpperCase() + state.accent.slice(1);
+            accent.classList.toggle('cg-on', true);
+        }
+        save();
+    }
 
+    function init() {
+        buildShell();
+    }
+
+    if (document.body) init();
+    else window.addEventListener('DOMContentLoaded', init, { once: true });
+
+    // Torn is a dynamic application. Recreate only our shell if Torn replaces the body contents.
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById(ROOT_ID) && document.body) init();
+    });
     observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
